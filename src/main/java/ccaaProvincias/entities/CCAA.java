@@ -1,11 +1,11 @@
 package ccaaProvincias.entities;
 
-public class Provincia extends Entidad {
+public class CCAA extends Entidad {
 	
 	/**
 	 * Constructor.
 	 */
-	public Provincia() {
+	public CCAA() {
 		super();
 	}
 	
