@@ -3,11 +3,24 @@ package ccaaProvincias.views;
 import javax.swing.JPanel;
 import java.awt.GridBagLayout;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
 import java.awt.GridBagConstraints;
 import java.awt.Font;
 import java.awt.Insets;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.List;
+
 import javax.swing.JTextField;
+
+import ccaaProvincias.controladores.ControladorCCAAMongoDB;
+import ccaaProvincias.controladores.ControladorProvinciaMongoDB;
+import ccaaProvincias.entities.CCAA;
+import ccaaProvincias.entities.Provincia;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JButton;
 
 public class PanelGestionProvincia extends JPanel {
@@ -15,6 +28,12 @@ public class PanelGestionProvincia extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private JTextField jtfCodigo;
 	private JTextField jtfDescripcion;
+	JComboBox<CCAA> jcbCCAA;
+	private PanelTabla panelTabla;
+	
+	public PanelTabla setPanelTabla(PanelTabla panelTabla) {
+		return this.panelTabla = panelTabla;
+	}
 
 	/**
 	 * Create the panel.
@@ -36,14 +55,14 @@ public class PanelGestionProvincia extends JPanel {
 		gbc_lblGestinDeProvincia.gridy = 0;
 		add(lblGestinDeProvincia, gbc_lblGestinDeProvincia);
 		
-		JLabel lblCdigo = new JLabel("Código:");
-		lblCdigo.setFont(new Font("Dialog", Font.BOLD, 15));
-		GridBagConstraints gbc_lblCdigo = new GridBagConstraints();
-		gbc_lblCdigo.anchor = GridBagConstraints.EAST;
-		gbc_lblCdigo.insets = new Insets(0, 0, 5, 5);
-		gbc_lblCdigo.gridx = 0;
-		gbc_lblCdigo.gridy = 1;
-		add(lblCdigo, gbc_lblCdigo);
+		JLabel lblCode = new JLabel("Code:");
+		lblCode.setFont(new Font("Dialog", Font.BOLD, 15));
+		GridBagConstraints gbc_lblCode = new GridBagConstraints();
+		gbc_lblCode.anchor = GridBagConstraints.EAST;
+		gbc_lblCode.insets = new Insets(0, 0, 5, 5);
+		gbc_lblCode.gridx = 0;
+		gbc_lblCode.gridy = 1;
+		add(lblCode, gbc_lblCode);
 		
 		jtfCodigo = new JTextField();
 		jtfCodigo.setEnabled(false);
@@ -84,7 +103,7 @@ public class PanelGestionProvincia extends JPanel {
 		gbc_lblCcaa.gridy = 3;
 		add(lblCcaa, gbc_lblCcaa);
 		
-		JComboBox jcbCCAA = new JComboBox();
+		jcbCCAA = new JComboBox<CCAA>();
 		jcbCCAA.setFont(new Font("Dialog", Font.BOLD, 15));
 		GridBagConstraints gbc_jcbCCAA = new GridBagConstraints();
 		gbc_jcbCCAA.insets = new Insets(0, 0, 5, 5);
@@ -94,6 +113,12 @@ public class PanelGestionProvincia extends JPanel {
 		add(jcbCCAA, gbc_jcbCCAA);
 		
 		JButton btnVerCCAA = new JButton("Ver CCAA");
+		btnVerCCAA.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				showJDialog();
+			}
+		});
 		btnVerCCAA.setFont(new Font("Dialog", Font.BOLD, 15));
 		GridBagConstraints gbc_btnVerCCAA = new GridBagConstraints();
 		gbc_btnVerCCAA.insets = new Insets(0, 0, 5, 0);
@@ -102,6 +127,18 @@ public class PanelGestionProvincia extends JPanel {
 		add(btnVerCCAA, gbc_btnVerCCAA);
 		
 		JButton btnGuardar = new JButton("Guardar");
+		btnGuardar.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					guardar();
+				} catch (Exception ex) {
+					JOptionPane.showMessageDialog(null, 
+							"No se ha realizado la actualización");
+					ex.printStackTrace();
+				}
+			}
+		});
 		btnGuardar.setFont(new Font("Dialog", Font.BOLD, 15));
 		GridBagConstraints gbc_btnGuardar = new GridBagConstraints();
 		gbc_btnGuardar.insets = new Insets(20, 0, 0, 5);
@@ -109,6 +146,93 @@ public class PanelGestionProvincia extends JPanel {
 		gbc_btnGuardar.gridy = 4;
 		add(btnGuardar, gbc_btnGuardar);
 
+		loadAllCCAA();
+		
+	}
+	
+	/**
+	 * 
+	 */
+	private void showJDialog() {
+		JDialog dialogo = new JDialog();
+		dialogo.setResizable(true);
+		dialogo.setTitle("Gestión de usuario");
+		dialogo.setContentPane(new PanelCCAA(this, panelTabla));
+		dialogo.pack();
+		dialogo.setModal(true);
+		dialogo.setLocation(
+				(Toolkit.getDefaultToolkit().getScreenSize().width)/2 - dialogo.getWidth()/2, 
+				(Toolkit.getDefaultToolkit().getScreenSize().height)/2 - dialogo.getHeight()/2);
+		dialogo.setVisible(true);
+	}
+	
+	/**
+	 * 
+	 */
+	public void guardar() {
+		Provincia p = new Provincia();
+		p.setCode(this.jtfCodigo.getText());
+		
+		if (!this.jtfDescripcion.getText().isEmpty()) {
+			p.setLabel(this.jtfDescripcion.getText());
+		}else {
+			JOptionPane.showMessageDialog(null,
+					"La descripción no puede estar vacía");;
+			return;
+		}
+		
+		p.setParent_code(((CCAA)this.jcbCCAA.getSelectedItem()).getCode());
+		
+		ControladorProvinciaMongoDB.getInstance().updateProvincia(p);
+		
+		this.panelTabla.updateTable();
+		
+		JOptionPane.showMessageDialog(null, 
+				"Se ha actualizado la provincia con éxito");
+	}
+	
+	/**
+	 * 
+	 * @param p
+	 */
+	public void muestraEnPantalla(Provincia p) {
+		if (p != null) {
+			this.jtfCodigo.setText(p.getCode());
+			
+			if (p.getLabel() != null) {
+				this.jtfDescripcion.setText(p.getLabel());
+			} else {
+				this.jtfDescripcion.setText("");
+			}
+			
+			for (int i = 0; i < this.jcbCCAA.getItemCount(); i++) {
+				if (this.jcbCCAA.getItemAt(i).getCode()
+						.equals(p.getParent_code())) {
+					this.jcbCCAA.setSelectedIndex(i);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * 
+	 */
+	public void loadAllCCAA() {
+		this.jcbCCAA.removeAllItems();
+		
+		List<CCAA> ccaaList = ControladorCCAAMongoDB
+				.getInstance().getAllCCAA();
+		for (CCAA ccaa : ccaaList) {
+			this.jcbCCAA.addItem(ccaa);
+		}
+	}
+
+	public JTextField getJtfCodigo() {
+		return jtfCodigo;
+	}
+
+	public void setJtfCodigo(JTextField jtfCodigo) {
+		this.jtfCodigo = jtfCodigo;
 	}
 
 }

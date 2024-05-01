@@ -3,6 +3,7 @@ package ccaaProvincias;
 import javax.swing.JFrame;
 
 import ccaaProvincias.utils.Apariencia;
+import ccaaProvincias.views.PanelPrincipal;
 
 public class Principal extends JFrame {
 
@@ -23,7 +24,8 @@ public class Principal extends JFrame {
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setResizable(false);
 		
-		
+		PanelPrincipal mainPanel = new PanelPrincipal();
+		this.getContentPane().add(mainPanel);
 	}
 	
 	/**

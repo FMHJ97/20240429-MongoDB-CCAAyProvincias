@@ -8,6 +8,8 @@ import ccaaProvincias.entities.CCAA;
 import ccaaProvincias.entities.Provincia;
 
 public class DatosDeTabla {
+	
+	private static List<Provincia> provincias = null;
 
 	/** 
 	 * 
@@ -22,41 +24,28 @@ public class DatosDeTabla {
 	 * @return
 	 */
 	public static Object[][] getDatosDeTabla() {
-		// Obtengo todos las provincias.
-		List<Provincia> provincias = (List<Provincia>) ControladorProvinciaMongoDB
-				.getInstance().getAllEntities();
 		
-		// Obtengo todas los usuarios.
-		List<CCAA> ccaaList = (List<CCAA>) ControladorCCAAMongoDB
-				.getInstance().getAllEntities();
+		List<Provincia> provincias = ControladorProvinciaMongoDB
+				.getInstance().getAllProvincias();
+		
+		List<CCAA> ccaaList = ControladorCCAAMongoDB
+				.getInstance().getAllCCAA();		
 		
 		// Preparo una estructura para pasar al constructor de la JTable
 		Object[][] datos = new Object[provincias.size()][4];
 		// Cargo los datos de la lista de las provincias en la matriz de los datos.
 		for (int i = 0; i < provincias.size(); i++) {
 			Provincia p = provincias.get(i);
-			datos[i][0] = c.getId();
+			datos[i][0] = p.getCode();
+			datos[i][1] = p.getLabel();
+			datos[i][2] = p.getParent_code();
 			
-			for (TipoContrato tipoCont : tiposContratos) {
-				if (tipoCont.getId() == c.getIdTipoContrato()) {
-					datos[i][1] = tipoCont.getDescripcion();
+			for (CCAA ccaa : ccaaList) {
+				if (ccaa.getCode().equalsIgnoreCase(p.getParent_code())) {
+					datos[i][3] = ccaa.getLabel();
 				}
 			}
-			
-			datos[i][2] = c.getDescripcion();
-			
-			for (Usuario usuario : usuarios) {
-				if (usuario.getId() == c.getIdUsuario()) {
-					datos[i][3] = usuario.getNombreUsuario();
-				}
-			}
-			
-			datos[i][4] = c.getSaldo();
-			datos[i][5] = c.getLimite();
-			datos[i][6] = c.getFechaFirma();
-			
-		}
-		
+		}		
 		return datos;
 	}
 	

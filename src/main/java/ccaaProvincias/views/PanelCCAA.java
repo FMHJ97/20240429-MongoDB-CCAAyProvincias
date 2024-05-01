@@ -3,22 +3,46 @@ package ccaaProvincias.views;
 import javax.swing.JPanel;
 import java.awt.GridBagLayout;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
 import java.awt.GridBagConstraints;
 import java.awt.Font;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.List;
+
 import javax.swing.JTextField;
+
+import ccaaProvincias.controladores.ControladorCCAAMongoDB;
+import ccaaProvincias.controladores.ControladorProvinciaMongoDB;
+import ccaaProvincias.entities.CCAA;
+import ccaaProvincias.entities.Provincia;
+
 import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
 
 public class PanelCCAA extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 	private JTextField jtfId;
 	private JTextField jtfDescripcion;
+	
+	private PanelGestionProvincia panelGP;
+	private PanelTabla panelTabla;
+	private CCAA ccaa;
 
 	/**
 	 * Create the panel.
 	 */
-	public PanelCCAA() {
+	public PanelCCAA(PanelGestionProvincia panelGP, PanelTabla panelTabla) {
+		
+		this.panelGP = panelGP;
+		this.panelTabla = panelTabla;
+		
+		this.ccaa = (CCAA) this.panelGP.jcbCCAA.getSelectedItem();
+		
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{0, 0, 0};
 		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0};
@@ -77,6 +101,12 @@ public class PanelCCAA extends JPanel {
 		jtfDescripcion.setColumns(10);
 		
 		JButton btnGuardar = new JButton("Guardar");
+		btnGuardar.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				guardar();
+			}
+		});
 		btnGuardar.setFont(new Font("Dialog", Font.BOLD, 15));
 		GridBagConstraints gbc_btnGuardar = new GridBagConstraints();
 		gbc_btnGuardar.insets = new Insets(15, 0, 0, 75);
@@ -84,6 +114,64 @@ public class PanelCCAA extends JPanel {
 		gbc_btnGuardar.gridy = 3;
 		add(btnGuardar, gbc_btnGuardar);
 
+		muestraDatos();
+		
+	}
+	
+	/**
+	 * 
+	 */
+	private void guardar() {
+		CCAA c = new CCAA();
+		c.setCode(this.jtfId.getText());
+		
+		if (!this.jtfDescripcion.getText().isEmpty()) {
+			c.setLabel(this.jtfDescripcion.getText());
+		} else {
+			JOptionPane.showMessageDialog(null,
+					"La descripción no puede estar vacía");;
+			return;
+		}
+		
+		c.setParent_code(ccaa.getParent_code());
+		
+		ControladorCCAAMongoDB.getInstance().updateCCAA(c);
+		
+		updatePanelPrincipal();
+		
+		JOptionPane.showMessageDialog(null, "Guardado correctamente");
+	}
+	
+	/**
+	 * 
+	 */
+	private void updatePanelPrincipal() {
+		
+		this.panelTabla.updateTable();
+		
+		List<Provincia> provincias = ControladorProvinciaMongoDB
+				.getInstance().getAllProvincias();
+		
+		String code = this.panelGP.getJtfCodigo().getText();
+		
+		for (Provincia provincia : provincias) {
+			if (provincia.getCode().equalsIgnoreCase(code)) {
+				this.panelGP.loadAllCCAA();
+				this.panelTabla.selectRowById(provincia);
+			}
+		}
+	}
+	
+	/**
+	 * 
+	 */
+	private void muestraDatos() {
+		this.jtfId.setText(ccaa.getCode());
+		if (!ccaa.getLabel().isEmpty()) {
+			this.jtfDescripcion.setText(ccaa.getLabel());
+		} else {
+			this.jtfDescripcion.setText("");
+		}
 	}
 
 }

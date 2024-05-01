@@ -18,8 +18,15 @@ public class PanelPrincipal extends JPanel {
 		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
 		add(splitPane, BorderLayout.CENTER);
 		
+		splitPane.setResizeWeight(0.5);
 		
+		PanelGestionProvincia panelProvincia = new PanelGestionProvincia();
+		splitPane.setRightComponent(panelProvincia);
 
+		PanelTabla panelTabla = new PanelTabla(panelProvincia);
+		splitPane.setLeftComponent(panelTabla);
+		
+		panelProvincia.setPanelTabla(panelTabla);
 	}
 
 }
