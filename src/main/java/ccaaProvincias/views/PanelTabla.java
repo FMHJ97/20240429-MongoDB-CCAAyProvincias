@@ -55,13 +55,13 @@ public class PanelTabla extends JPanel {
 	}
 	
 	/**
-	 * 
-	 * @param p
+	 * Seleccionamos el registro según el code del elemento (Provincia).
+	 * @param code
 	 */
-	public void selectRowById(Provincia p) {
+	public void selectRowByCode(String code) {
 		for (int i = 0; i < this.dtm.getRowCount(); i++) {
-			String code = (String) this.dtm.getValueAt(i, 0);
-			if (code.equalsIgnoreCase(p.getCode())) {
+			String codeTable = (String) this.dtm.getValueAt(i, 0);
+			if (codeTable.equalsIgnoreCase(code)) {
 				this.table.setRowSelectionInterval(i, i);
 				showSelectedRow();
 			}

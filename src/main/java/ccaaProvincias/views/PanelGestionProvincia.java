@@ -171,6 +171,8 @@ public class PanelGestionProvincia extends JPanel {
 	 */
 	public void guardar() {
 		Provincia p = new Provincia();
+		
+		// Guardamos todos los datos de Provincia del panel.
 		p.setCode(this.jtfCodigo.getText());
 		
 		if (!this.jtfDescripcion.getText().isEmpty()) {
@@ -183,9 +185,14 @@ public class PanelGestionProvincia extends JPanel {
 		
 		p.setParent_code(((CCAA)this.jcbCCAA.getSelectedItem()).getCode());
 		
-		ControladorProvinciaMongoDB.getInstance().updateProvincia(p);
+		// Guardamos los datos nuevos.
+		ControladorProvinciaMongoDB.getInstance()
+			.updateProvincia(p);
 		
+		// Actualizamos los datos de la tabla.
+		// A continuación, seleccionamos en la tabla dicho registro.
 		this.panelTabla.updateTable();
+		this.panelTabla.selectRowByCode(this.jtfCodigo.getText());
 		
 		JOptionPane.showMessageDialog(null, 
 				"Se ha actualizado la provincia con éxito");

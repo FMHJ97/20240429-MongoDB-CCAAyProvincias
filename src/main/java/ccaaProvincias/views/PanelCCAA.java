@@ -41,6 +41,7 @@ public class PanelCCAA extends JPanel {
 		this.panelGP = panelGP;
 		this.panelTabla = panelTabla;
 		
+		// Guardamos el Objeto CCAA seleccionado.
 		this.ccaa = (CCAA) this.panelGP.jcbCCAA.getSelectedItem();
 		
 		GridBagLayout gridBagLayout = new GridBagLayout();
@@ -132,7 +133,8 @@ public class PanelCCAA extends JPanel {
 					"La descripción no puede estar vacía");;
 			return;
 		}
-		
+		// Guardamos el parent_code del CCAA aunque 
+		// no aparezca en pantalla.
 		c.setParent_code(ccaa.getParent_code());
 		
 		ControladorCCAAMongoDB.getInstance().updateCCAA(c);
@@ -143,23 +145,17 @@ public class PanelCCAA extends JPanel {
 	}
 	
 	/**
-	 * 
+	 * Método que actualiza la tabla y, a su vez, 
+	 * actualiza los datos del Panel Gestión Provincia.
 	 */
 	private void updatePanelPrincipal() {
 		
 		this.panelTabla.updateTable();
-		
-		List<Provincia> provincias = ControladorProvinciaMongoDB
-				.getInstance().getAllProvincias();
+		this.panelGP.loadAllCCAA();
 		
 		String code = this.panelGP.getJtfCodigo().getText();
 		
-		for (Provincia provincia : provincias) {
-			if (provincia.getCode().equalsIgnoreCase(code)) {
-				this.panelGP.loadAllCCAA();
-				this.panelTabla.selectRowById(provincia);
-			}
-		}
+		this.panelTabla.selectRowByCode(code);
 	}
 	
 	/**
